@@ -1,0 +1,65 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: entities-psql-deployment
+  namespace: dmr
+  labels:
+    app: entities-psql
+    service: entities
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: entities-psql
+      service: entities
+  template:
+    metadata:
+      labels:
+        app: entities-psql
+        service: entities
+    spec:
+      containers:
+      - name: entities-psql
+        image: postgres:10.3
+        imagePullPolicy: Always
+        ports:
+        - name: postgresql
+          containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: entities-job-config
+              key: database.user
+        - name: PGUSER
+          valueFrom:
+            configMapKeyRef:
+              name: entities-job-config
+              key: database.user
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: entities-job-config
+              key: database.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - exec pg_isready --host $POD_IP
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+          failureThreshold: 6
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - exec pg_isready --host $POD_IP
+          initialDelaySeconds: 5
+          timeoutSeconds: 3
+          periodSeconds: 5

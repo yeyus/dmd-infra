@@ -1,0 +1,37 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: entities-update-job
+  namespace: dmr
+  labels:
+    service: entities
+spec:
+  template:
+    spec:
+      containers:
+      - name: update-entities
+        image: yeyus/dmr-entities:latest
+        imagePullPolicy: Always
+        env:
+          - name: DB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: entities-job-config
+                key: database.service
+          - name: DB_USER
+            valueFrom:
+              configMapKeyRef:
+                name: entities-job-config
+                key: database.user
+          - name: DB_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: entities-job-config
+                key: database.password
+          - name: DB_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: entities-job-config
+                key: database.name
+      restartPolicy: OnFailure
+  backoffLimit: 4

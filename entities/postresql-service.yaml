@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: entities-psql
+  namespace: dmr
+spec:
+  selector:
+    app: entities-psql
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
